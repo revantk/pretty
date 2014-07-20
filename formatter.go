@@ -136,6 +136,10 @@ func (p *printer) printValue(v reflect.Value, showType, quote bool) {
 		}
 		writeByte(p, '}')
 	case reflect.Struct:
+		if f, ok := getFormatterInterface(v); ok {
+			fmt.Fprintf(p, "%+v", f)
+			break
+		}
 		t := v.Type()
 		if showType {
 			io.WriteString(p, t.String())
@@ -219,6 +223,8 @@ func (p *printer) printValue(v reflect.Value, showType, quote bool) {
 			writeByte(p, '(')
 			io.WriteString(p, v.Type().String())
 			io.WriteString(p, ")(nil)")
+		} else if f, ok := getFormatterInterface(v); ok {
+			fmt.Fprintf(p, "%+v", f)
 		} else {
 			writeByte(p, '&')
 			p.printValue(e, true, true)
@@ -297,4 +303,13 @@ func getField(v reflect.Value, i int) reflect.Value {
 		val = val.Elem()
 	}
 	return val
+}
+
+func getFormatterInterface(v reflect.Value) (f fmt.Formatter, ok bool) {
+	ok = v.CanInterface()
+	if !ok {
+		return
+	}
+	f, ok = v.Interface().(fmt.Formatter)
+	return
 }

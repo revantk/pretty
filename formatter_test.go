@@ -17,6 +17,15 @@ type LongStructTypeName struct {
 	otherLongFieldName interface{}
 }
 
+type FormattedStructType struct {
+	fieldOne string
+	fieldTwo LongStructTypeName
+}
+
+func (f FormattedStructType) Format(s fmt.State, c rune) {
+	s.Write([]byte("WontPrintFieldValues"))
+}
+
 type SA struct {
 	t *T
 }
@@ -129,6 +138,16 @@ var gosyntax = []test{
         longFieldName:      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         otherLongFieldName: nil,
     },
+}`,
+	},
+	{
+		[]interface{}{
+			FormattedStructType{"One", LongStructTypeName{}},
+			&FormattedStructType{"Two", LongStructTypeName{}},
+		},
+		`[]interface {}{
+    WontPrintFieldValues,
+    WontPrintFieldValues,
 }`,
 	},
 }
